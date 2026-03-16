@@ -53,14 +53,6 @@ Handles 50,000+ rows with fully vectorized operations.
 
 ---
 
-## 🛠 Run Locally
-```bash
-pip install -r requirements.txt
-streamlit run ar_priority_engine.py
-```
-
----
-
 ## ⭐ What This Project Demonstrates
 - Strong Python + data engineering skills  
 - Finance domain expertise (AR, aging, KPIs)  
