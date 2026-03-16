@@ -1,7 +1,4 @@
-Here you go, Ravneet — a **clean, sharp, recruiter‑friendly README** that uses your badge exactly the way you want it.  
-Short, impressive, and instantly skimmable.
 
----
 
 # 💰 AR Priority Engine — Enterprise Receivables Dashboard
 
