@@ -175,14 +175,28 @@ if uploaded_file is not None:
 if st.session_state.ar_data is not None:
     ar_data = st.session_state.ar_data.copy()
 
-    # Already fixed above, but keep consistent:
+    # Recalculate Days_Overdue cleanly
     today = pd.to_datetime('today')
-    ar_data['Days_Overdue'] = (today - ar_data['Due_Date']).dt.days.clip(lower=0)
+    ar_data['Days_Overdue'] = (today - ar_data['Due_Date']).dt.days
+
+    # Ensure Days_Overdue is numeric (CRITICAL FIX)
+    ar_data['Days_Overdue'] = pd.to_numeric(
+        ar_data['Days_Overdue'], errors='coerce'
+    ).fillna(0).astype(int)
 
     days_overdue = ar_data['Days_Overdue']
-    ar_data['Priority_Score'] = ar_data['Amount'] * np.minimum(days_overdue / 90, 1) * (1 + days_overdue / 30)
 
+    # Priority Score
+    ar_data['Priority_Score'] = (
+        ar_data['Amount'] *
+        np.minimum(days_overdue / 90, 1) *
+        (1 + days_overdue / 30)
+    )
+
+    # ============================================================
     # ✅ FINAL FIXED Risk_Badge block (6 conditions = 6 outputs)
+    # ============================================================
+
     ar_data['Risk_Badge'] = np.select(
         [
             days_overdue >= 120,
