@@ -198,23 +198,24 @@ if st.session_state.ar_data is not None:
     # ============================================================
 
     ar_data['Risk_Badge'] = np.select(
-        [
-            days_overdue >= 120,
-            days_overdue >= 91,
-            days_overdue >= 61,
-            days_overdue >= 31,
-            days_overdue > 0,
-            days_overdue >= 0
-        ],
-        [
-            '🛑 120+',
-            '🔴 91-120',
-            '🟡 61-90',
-            '🟠 31-60',
-            '🟢 0-30',
-            '✅ Current'
-        ]
-    )
+    [
+        days_overdue >= 120,
+        days_overdue >= 91,
+        days_overdue >= 61,
+        days_overdue >= 31,
+        days_overdue > 0,
+        days_overdue >= 0
+    ],
+    [
+        str('🛑 120+'),
+        str('🔴 91-120'),
+        str('🟡 61-90'),
+        str('🟠 31-60'),
+        str('🟢 0-30'),
+        str('✅ Current')
+    ]
+)
+
 
     # ============================================================
     # 📈 KPIs
