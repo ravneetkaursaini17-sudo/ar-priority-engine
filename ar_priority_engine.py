@@ -9,13 +9,23 @@ Created on Mon Mar 16 12:49:08 2026
 
 import streamlit as st
 import pandas as pd
-import plotly.express as px
 import numpy as np
 from datetime import datetime, timedelta
 import warnings
 warnings.filterwarnings('ignore')
 
-st.set_page_config(page_title="AR PRIORITY ENGINE ENTERPRISE", page_icon="💰", layout="wide")
+# ✅ SAFE PLOTLY IMPORT (Prevents Streamlit Cloud crashes)
+try:
+    import plotly.express as px
+except ImportError:
+    st.error("🔧 Plotly is not installed in this environment. Charts will be disabled.")
+    px = None
+
+st.set_page_config(
+    page_title="AR PRIORITY ENGINE ENTERPRISE",
+    page_icon="💰",
+    layout="wide"
+)
 
 # SESSION STATE
 if 'ar_data' not in st.session_state:
@@ -172,10 +182,24 @@ if st.session_state.ar_data is not None:
     days_overdue = ar_data['Days_Overdue']
     ar_data['Priority_Score'] = ar_data['Amount'] * np.minimum(days_overdue / 90, 1) * (1 + days_overdue / 30)
 
+    # ✅ FINAL FIXED Risk_Badge block (6 conditions = 6 outputs)
     ar_data['Risk_Badge'] = np.select(
-        [days_overdue >= 120, days_overdue >= 91, days_overdue >= 61,
-         days_overdue >= 31, days_overdue > 0,days_overdue >= 0],
-        ['🛑 120+', '🔴 91-120', '🟡 61-90', '🟠 31-60', '🟢 0-30', '✅ Current']
+        [
+            days_overdue >= 120,
+            days_overdue >= 91,
+            days_overdue >= 61,
+            days_overdue >= 31,
+            days_overdue > 0,
+            days_overdue >= 0
+        ],
+        [
+            '🛑 120+',
+            '🔴 91-120',
+            '🟡 61-90',
+            '🟠 31-60',
+            '🟢 0-30',
+            '✅ Current'
+        ]
     )
 
     # ============================================================
@@ -201,7 +225,7 @@ if st.session_state.ar_data is not None:
     }
 
     # ============================================================
-    # ✅ FIX #2 — KPI COLOR LOGIC + IndexError fix
+    # KPI COLOR LOGIC
     # ============================================================
 
     def kpi_color(name, value):
@@ -261,14 +285,17 @@ if st.session_state.ar_data is not None:
 
     pie_df = pd.concat([top5[["Customer", "Amount"]], others])
 
-    fig = px.pie(
-        pie_df,
-        names="Customer",
-        values="Amount",
-        title="Top 5 Customers vs Others — AR Exposure",
-        color_discrete_sequence=px.colors.qualitative.Set2
-    )
-    st.plotly_chart(fig, use_container_width=True)
+    if px is not None:
+        fig = px.pie(
+            pie_df,
+            names="Customer",
+            values="Amount",
+            title="Top 5 Customers vs Others — AR Exposure",
+            color_discrete_sequence=px.colors.qualitative.Set2
+        )
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.warning("Plotly unavailable — cannot render pie chart.")
 
     if not top5.empty:
         largest_customer = top5.iloc[0]
@@ -399,7 +426,6 @@ Accounts Receivable Team
     for _, row in top5.iterrows():
         days = int(row['Days Late'])
 
-        # FIX #3 — Updated ladder
         if days >= 365:
             action = "⚪ Write-off evaluation"
         elif days >= 180:
